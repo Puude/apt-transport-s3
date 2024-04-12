@@ -50,9 +50,9 @@ jobs:
       - name: upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifact-deb
-          path: ${{ env.APP_NAME }}-${{ env.VERSION }}.deb
-
+            name: artifact-deb
+            path: |
+              ./*.deb
 
   create-release:
     runs-on: ubuntu-latest
