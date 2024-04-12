@@ -33,7 +33,7 @@ jobs:
       - name: create control file
         run: |
             echo "Package: ${{ env.APP_NAME }}" > ${{env.APP_NAME}}/DEBIAN/control
-            echo "Version: ${{ github.ref }}" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Version: $(echo ${{ github.ref }} | sed 's/refs\/tags\///')" >> ${{env.APP_NAME}}/DEBIAN/control
             echo "Section: web" >> ${{env.APP_NAME}}/DEBIAN/control
             echo "Priority: optional" >> ${{env.APP_NAME}}/DEBIAN/control
             echo "Architecture: all" >> ${{env.APP_NAME}}/DEBIAN/control
