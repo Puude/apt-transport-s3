@@ -13,7 +13,7 @@ env:
   MAINTAINER_EMAIL: 'support@zygo.be'
   DESC: 's3 apt method. Orignal https://github.com/MayaraCloud/apt-transport-s3'
   DEPENDS: python3, python3-pip
-  VERSION: $(echo ${{ github.ref }} | sed 's/refs\/tags\///')
+  VERSION: $(echo ${{ github.ref }} | sed -e 's/refs\/tags\/v//')
 
 jobs:
   build-linux-packages:
