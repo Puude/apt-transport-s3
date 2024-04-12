@@ -13,6 +13,7 @@ env:
   MAINTAINER_EMAIL: 'support@zygo.be'
   DESC: 's3 apt method. Orignal https://github.com/MayaraCloud/apt-transport-s3'
   DEPENDS: python3, python3-pip
+  VERSION: $(echo ${{ github.ref }} | sed 's/refs\/tags\///')
 
 jobs:
   build-linux-packages:
@@ -33,7 +34,7 @@ jobs:
       - name: create control file
         run: |
             echo "Package: ${{ env.APP_NAME }}" > ${{env.APP_NAME}}/DEBIAN/control
-            echo "Version: $(echo ${{ github.ref }} | sed 's/refs\/tags\///')" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Version: ${{ env.VERSION }}" >> ${{env.APP_NAME}}/DEBIAN/control
             echo "Section: web" >> ${{env.APP_NAME}}/DEBIAN/control
             echo "Priority: optional" >> ${{env.APP_NAME}}/DEBIAN/control
             echo "Architecture: all" >> ${{env.APP_NAME}}/DEBIAN/control
@@ -44,13 +45,13 @@ jobs:
       - name: Build the Debian package
         run: |
             dpkg-deb --build ${{env.APP_NAME}}
-            mv ${{env.APP_NAME}}.deb ${{ env.APP_NAME }}-${{ github.ref }}.deb
+            mv ${{env.APP_NAME}}.deb ${{ env.APP_NAME }}-${{ env.VERSION }}.deb
       
       - name: upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifact-deb
-          path: ${{ env.APP_NAME }}-${{ github.ref_name }}.deb
+          path: ${{ env.APP_NAME }}-${{ env.VERSION }}.deb
 
 
   create-release:
