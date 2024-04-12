@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Ensure pip is available
+apt-get update
+apt-get install -y python3-pip
+
+# Install the required pip package
+pip3 install boto3

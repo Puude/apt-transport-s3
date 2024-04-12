@@ -12,6 +12,7 @@ env:
   MAINTAINER: 'ZyGo'
   MAINTAINER_EMAIL: 'support@zygo.be'
   DESC: 's3 apt method. Orignal https://github.com/MayaraCloud/apt-transport-s3'
+  DEPENDS: python3, python3-pip
 
 jobs:
   build-linux-packages:
@@ -22,26 +23,35 @@ jobs:
 
       - name: create artifacts
         run: |
-            mkdir -p .debpkg/usr/lib/apt/methods
-            cp s3 .debpkg/usr/lib/apt/methods/s3
-            chmod +x .debpkg/usr/lib/apt/methods/s3
+            mkdir -p ${{env.APP_NAME}}/usr/lib/apt/methods
+            cp s3.py ${{env.APP_NAME}}/usr/lib/apt/methods/s3
+            chmod +x ${{env.APP_NAME}}/usr/lib/apt/methods/s3
+            mkdir -p ${{env.APP_NAME}}/DEBIAN
+            cp postinst ${{env.APP_NAME}}/DEBIAN/postinst
+            chmod +x ${{env.APP_NAME}}/DEBIAN/postinst
 
-      - name: create deb
-        uses: jiro4989/build-deb-action@v3
-        with:
-          package: ${{env.APP_NAME}}
-          package_root: .debpkg
-          maintainer: ${{env.MAINTAINER_EMAIL}}
-          version: ${{ github.ref }} # refs/tags/v*.*.*
-          arch: "amd64"
-          desc: ${{env.DESC}}
+      - name: create control file
+        run: |
+            echo "Package: ${{ env.APP_NAME }}" > ${{env.APP_NAME}}/DEBIAN/control
+            echo "Version: ${{ github.ref }}" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Section: web" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Priority: optional" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Architecture: all" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Depends: ${{ env.DEPENDS }}" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Maintainer: ${{ env.MAINTAINER_EMAIL }}" >> ${{env.APP_NAME}}/DEBIAN/control
+            echo "Description: ${{ env.DESC }}" >> ${{env.APP_NAME}}/DEBIAN/control
 
+      - name: Build the Debian package
+        run: |
+            dpkg-deb --build ${{env.APP_NAME}}
+            mv ${{env.APP_NAME}}.deb ${{ env.APP_NAME }}-${{ github.ref }}.deb
+      
       - name: upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifact-deb
-          path: |
-            ./*.deb
+          path: ${{ env.APP_NAME }}-${{ github.ref_name }}.deb
+
 
   create-release:
     runs-on: ubuntu-latest
@@ -62,7 +72,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Write upload_url to file
-        run: echo '${{ steps.create-release.outputs.upload_url }}' > upload_url.txt
+        run: echo "${{ steps.create-release.outputs.upload_url }}" > upload_url.txt
 
       - uses: actions/upload-artifact@v4
         with:
